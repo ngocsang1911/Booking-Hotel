@@ -1,0 +1,228 @@
+.rooms-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.room-item {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  @apply transition-colors duration-200;
+}
+
+.room-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+/* Thêm hiệu ứng gradient cho buttons */
+.btn-primary {
+  background: linear-gradient(45deg, #2196F3, #21CBF3);
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  @apply transition-all duration-200;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+}
+
+/* Styles cho hero section */
+.hero-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.background-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 1s ease-in-out;
+}
+
+/* Thêm hiệu ứng ken burns cho hình nền */
+@keyframes kenBurns {
+  0% {
+    transform: scale(1.2) translate(0);
+  }
+  50% {
+    transform: scale(1) translate(-2%, -1%);
+  }
+  100% {
+    transform: scale(1.2) translate(0);
+  }
+}
+
+.hero-section .background-slide {
+  animation: kenBurns 20s infinite ease-in-out;
+}
+
+/* Indicator cho slideshow */
+.slide-indicators {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicator.active {
+  background: white;
+  transform: scale(1.2);
+}
+
+/* Navigation Arrows */
+.navigation-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(5px);
+  @apply bg-gray-800 bg-opacity-30;
+}
+
+.navigation-arrow:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) scale(1.1);
+  @apply bg-gray-700 bg-opacity-50;
+}
+
+.left-arrow {
+  left: 20px;
+}
+
+.right-arrow {
+  right: 20px;
+}
+
+/* Smooth slide transition */
+.slide-transition {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s ease-in-out;
+}
+
+/* Dark mode styles */
+.dark {
+  @apply bg-gray-900 text-white;
+}
+
+.dark .room-item {
+  @apply bg-gray-800 shadow-lg;
+}
+
+.dark .btn-primary {
+  background: linear-gradient(45deg, #3B82F6, #60A5FA);
+}
+
+.dark .navigation-arrow {
+  @apply bg-gray-800 bg-opacity-30;
+}
+
+.dark .navigation-arrow:hover {
+  @apply bg-gray-700 bg-opacity-50;
+}
+
+/* Dark mode specific animations */
+.dark .animate-fade-in {
+  animation: fadeInDark 0.5s ease-in forwards;
+}
+
+@keyframes fadeInDark {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode hover effects */
+.dark .room-preview:hover {
+  @apply shadow-xl shadow-blue-900/20;
+}
+
+.dark .featured-rooms {
+  background: linear-gradient(to bottom, #1a1a1a, #2d3748);
+}
+
+/* Smooth transition for theme switching */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode styles for features section */
+.dark .feature-card {
+  @apply bg-gray-700;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark .feature-card:hover {
+  @apply bg-gray-600;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Smooth transition for feature cards */
+.feature-card {
+  transition: all 0.3s ease;
+}
+
+/* Image hover effect in dark mode */
+.dark .feature-card img {
+  filter: brightness(0.9);
+  transition: filter 0.3s ease;
+}
+
+.dark .feature-card:hover img {
+  filter: brightness(1);
+}
+
+/* Gradient background for dark mode sections */
+.dark section {
+  background: linear-gradient(to bottom, #1a1a1a, #2d3748);
+}
+
+/* Enhanced hover effects for dark mode */
+.dark .group:hover .feature-card {
+  transform: translateY(-8px);
+} 

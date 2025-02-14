@@ -9,6 +9,7 @@ import Booking from './pages/Booking/Booking';
 import Checkout from './pages/Checkout/Checkout';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import Payment from './pages/Payment/Payment';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/checkout/:roomId" element={<Checkout />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/payment" element={<Payment />} />
         </Routes>
         <Footer />
       </div>

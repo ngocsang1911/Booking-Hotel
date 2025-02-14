@@ -1,90 +1,115 @@
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import BookingForm from '../../components/BookingForm/BookingForm';
 import ImageGallery from '../../components/ImageGallery/ImageGallery';
 
 const RoomDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  // Giả lập dữ liệu phòng - trong thực tế sẽ lấy từ API
-  const room = {
-    id: id,
-    name: "Deluxe Ocean View", 
-    description: "Experience luxury living with breathtaking ocean views. Our Deluxe Ocean View rooms offer the perfect blend of comfort and sophistication.",
-    price: 299,
-    size: "45m²",
-    maxGuests: 2,
-    bedType: "King Size",
-    images: [
-      "/assets/images/rooms/deluxe-1.jpg",
-      "/assets/images/rooms/deluxe-2.jpg",
-      "/assets/images/rooms/deluxe-3.jpg",
-      "/assets/images/rooms/deluxe-4.jpg"
-    ],
-    amenities: [
-      "Ocean View",
-      "King Size Bed", 
-      "Free WiFi",
-      "Mini Bar",
-      "Room Service",
-      "Air Conditioning",
-      "Smart TV",
-      "Coffee Maker",
-      "In-room Safe",
-      "Premium Toiletries"
-    ]
-  };
+  const location = useLocation();
+  const [roomData, setRoomData] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const searchParams = location.state?.searchParams;
+
+  useEffect(() => {
+    // Kiểm tra trạng thái đăng nhập
+    const user = localStorage.getItem('user');
+    setIsLoggedIn(!!user);
+
+    // Giả lập dữ liệu phòng - trong thực tế sẽ lấy từ API dựa vào id
+    const mockRoom = {
+      id: id,
+      name: "Deluxe Ocean View",
+      description: "Spacious room with stunning ocean view",
+      price: 299,
+      image: "/assets/images/rooms/deluxe-1.jpg",
+      amenities: ["Ocean View", "King Bed", "Free WiFi", "Mini Bar"]
+    };
+    setRoomData(mockRoom);
+  }, [id]);
 
   const handleBookNow = () => {
-    // Chuyển hướng đến trang checkout với ID phòng và thông tin đặt phòng
-    navigate(`/checkout/${room.id}`, {
+    if (!isLoggedIn) {
+      // Nếu chưa đăng nhập, chuyển đến trang đăng nhập
+      navigate('/login', {
+        state: {
+          from: location.pathname,
+          roomData: roomData,
+          searchParams: searchParams
+        }
+      });
+      return;
+    }
+
+    if (!roomData) return;
+
+    const bookingData = {
+      ...roomData,
+      checkIn: searchParams?.checkIn || '',
+      checkOut: searchParams?.checkOut || '',
+      totalPrice: calculateTotalPrice(roomData.price, searchParams?.checkIn, searchParams?.checkOut)
+    };
+
+    navigate('/payment', {
       state: {
-        roomName: room.name,
-        price: room.price,
-        checkIn: new Date(),
-        checkOut: new Date(new Date().setDate(new Date().getDate() + 1)),
-        guests: 2,
-        nights: 1
+        roomData: bookingData
       }
     });
   };
 
+  const calculateTotalPrice = (price, checkIn, checkOut) => {
+    if (!checkIn || !checkOut) return price;
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    return price * nights;
+  };
+
+  if (!roomData) {
+    return <div className="container mx-auto px-6 py-8">Loading...</div>;
+  }
+
   return (
-    <div className="container mx-auto px-6 py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <div>
-          <ImageGallery images={room.images} />
-        </div>
-        <div className="space-y-8">
+    <div className="container mx-auto px-6 py-8">
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h1 className="text-3xl font-bold mb-4">{roomData.name}</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <img
+            src={roomData.image}
+            alt={roomData.name}
+            className="w-full h-96 object-cover rounded-lg"
+          />
           <div>
-            <h1 className="text-3xl font-bold mb-4">{room.name}</h1>
-            <p className="text-gray-600">{room.description}</p>
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Amenities</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {room.amenities.map((amenity, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>{amenity}</span>
-                </div>
-              ))}
+            <p className="text-xl mb-4">{roomData.description}</p>
+            <p className="text-2xl font-bold mb-4">${roomData.price} per night</p>
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Amenities:</h3>
+              <ul className="list-disc list-inside">
+                {roomData.amenities.map((amenity, index) => (
+                  <li key={index}>{amenity}</li>
+                ))}
+              </ul>
             </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="text-2xl font-bold text-blue-600">
-              ${room.price}<span className="text-gray-500 text-lg">/night</span>
-            </div>
+            {searchParams && (
+              <div className="mb-4 p-4 bg-gray-100 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Booking Details:</h3>
+                <p>Check-in: {searchParams.checkIn}</p>
+                <p>Check-out: {searchParams.checkOut}</p>
+                <p>Guests: {searchParams.guests}</p>
+              </div>
+            )}
             <button
               onClick={handleBookNow}
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Book Now
+              {isLoggedIn ? 'Book Now' : 'Login to Book'}
             </button>
+            {!isLoggedIn && (
+              <p className="mt-2 text-sm text-gray-600">
+                Please login to book this room
+              </p>
+            )}
           </div>
-          <BookingForm roomId={id} />
         </div>
       </div>
     </div>

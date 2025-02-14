@@ -1,7 +1,21 @@
 import React from 'react';
 import RoomCard from '../../components/RoomCard/RoomCard';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Rooms = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = location.state?.searchParams;
+
+  const handleBookNow = (room) => {
+    navigate(`/room/${room.id}`, {
+      state: {
+        room,
+        searchParams
+      }
+    });
+  };
+
   const rooms = [
     {
       id: 1,
@@ -65,9 +79,21 @@ const Rooms = () => {
     <div className="bg-gray-100 min-h-screen py-12">
       <div className="container mx-auto px-6">
         <h1 className="text-4xl font-bold mb-8 text-center">Our Rooms</h1>
+        {searchParams && (
+          <div className="mb-8 p-4 bg-white rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-2">Search Results</h2>
+            <p>Check-in: {searchParams.checkIn}</p>
+            <p>Check-out: {searchParams.checkOut}</p>
+            <p>Guests: {searchParams.guests}</p>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {rooms.map(room => (
-            <RoomCard key={room.id} room={room} />
+            <RoomCard
+              key={room.id}
+              room={room}
+              onBookNow={() => handleBookNow(room)}
+            />
           ))}
         </div>
       </div>
@@ -75,4 +101,4 @@ const Rooms = () => {
   );
 };
 
-export default Rooms; 
+export default Rooms;

@@ -225,4 +225,51 @@
 /* Enhanced hover effects for dark mode */
 .dark .group:hover .feature-card {
   transform: translateY(-8px);
+}
+
+/* Calendar Styles */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.search-calendar {
+  @apply bg-white/90 backdrop-blur-md rounded-lg shadow-xl border-0;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.react-datepicker {
+  @apply font-sans border-0 shadow-xl;
+  background: transparent;
+}
+
+.react-datepicker__header {
+  @apply bg-transparent border-0 rounded-t-lg;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  @apply bg-blue-500/80 text-white rounded-full hover:bg-blue-600/80 !important;
+}
+
+.react-datepicker__day:hover {
+  @apply bg-blue-100/80 rounded-full;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom select arrow with transparent background */
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
 } 

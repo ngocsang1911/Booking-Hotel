@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import AuthModal from '../Modal/AuthModal';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '../../context/ThemeContext';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -14,12 +16,26 @@ const Header = () => {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { darkMode } = useTheme();
+  const location = useLocation();
+  const isRoomsPage = location.pathname === '/rooms';
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleLogout = () => {
@@ -38,9 +54,9 @@ const Header = () => {
   const handleLogin = (e) => {
     e.preventDefault();
     if (formData.email && formData.password) {
-      localStorage.setItem('user', JSON.stringify({ 
+      localStorage.setItem('user', JSON.stringify({
         email: formData.email,
-        isLoggedIn: true 
+        isLoggedIn: true
       }));
       setUser({ email: formData.email, isLoggedIn: true });
       setShowLoginModal(false);
@@ -56,7 +72,7 @@ const Header = () => {
       setError('Passwords do not match');
       return;
     }
-    localStorage.setItem('user', JSON.stringify({ 
+    localStorage.setItem('user', JSON.stringify({
       name: formData.name,
       email: formData.email,
       isLoggedIn: true
@@ -66,44 +82,186 @@ const Header = () => {
     setFormData({ email: '', password: '', name: '', confirmPassword: '' });
   };
 
+  const navLinks = [
+    { path: '/', label: 'Trang chủ' },
+    { path: '/rooms', label: 'Phòng' },
+    { path: '/services', label: 'Dịch vụ' },
+    { path: '/about', label: 'Về chúng tôi' },
+    { path: '/contact', label: 'Liên hệ' },
+  ];
+
   return (
-    <header className="bg-white shadow-md">
+    <header
+      className={`fixed w-full z-50 transition-all duration-300 ${isScrolled || isRoomsPage
+        ? darkMode
+          ? 'bg-gray-900/95 backdrop-blur-md shadow-lg'
+          : 'bg-white/95 backdrop-blur-md shadow-lg'
+        : 'bg-transparent'
+        }`}
+    >
       <nav className="container mx-auto px-6 py-4">
-        <div className="flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold text-gray-800">
-            Hotel Booking
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={`text-2xl font-bold ${isScrolled || isRoomsPage
+                ? darkMode
+                  ? 'text-white'
+                  : 'text-gray-900'
+                : isRoomsPage
+                  ? 'text-gray-900'
+                  : 'text-white'
+                }`}
+            >
+              Khách Sạn Sang Chảnh
+            </motion.div>
           </Link>
-          <div className="flex items-center space-x-4">
-            <Link to="/" className="text-gray-600 hover:text-gray-800">Home</Link>
-            <Link to="/rooms" className="text-gray-600 hover:text-gray-800">Rooms</Link>
-            {user ? (
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-600">Welcome, {user.name || user.email}</span>
-                <button
-                  onClick={handleLogout}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => setShowLoginModal(true)}
-                  className="text-blue-600 hover:text-blue-700"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => setShowRegisterModal(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Register
-                </button>
-              </div>
-            )}
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`relative group ${isScrolled || isRoomsPage
+                  ? darkMode
+                    ? 'text-gray-300 hover:text-white'
+                    : 'text-gray-600 hover:text-gray-900'
+                  : isRoomsPage
+                    ? 'text-gray-600 hover:text-gray-900'
+                    : 'text-white hover:text-white/90'
+                  }`}
+              >
+                {link.label}
+                <motion.div
+                  className={`absolute -bottom-1 left-0 w-0 h-0.5 ${darkMode
+                    ? 'bg-blue-400'
+                    : isRoomsPage
+                      ? 'bg-blue-600'
+                      : 'bg-white'
+                    } group-hover:w-full transition-all duration-300`}
+                  whileHover={{ width: '100%' }}
+                />
+                {location.pathname === link.path && (
+                  <motion.div
+                    className={`absolute -bottom-1 left-0 w-full h-0.5 ${darkMode
+                      ? 'bg-blue-400'
+                      : isRoomsPage
+                        ? 'bg-blue-600'
+                        : 'bg-white'
+                      }`}
+                    layoutId="underline"
+                  />
+                )}
+              </Link>
+            ))}
+
+            {/* Auth Buttons */}
+            <div className="hidden md:flex items-center space-x-4">
+              {user ? (
+                <div className="flex items-center space-x-4">
+                  <span className={`${isScrolled || isRoomsPage
+                    ? darkMode ? 'text-white' : 'text-gray-900'
+                    : 'text-white'
+                    }`}>
+                    {user.email}
+                  </span>
+                  <button
+                    onClick={handleLogout}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:from-rose-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-rose-500/25 font-medium"
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setShowLoginModal(true)}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 text-white hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 shadow-lg hover:shadow-blue-500/25 font-medium"
+                  >
+                    Đăng nhập
+                  </button>
+                  <button
+                    onClick={() => setShowRegisterModal(true)}
+                    className={`px-6 py-2.5 rounded-xl transition-all duration-300 font-medium ${darkMode
+                        ? 'bg-gradient-to-r from-purple-500/90 to-violet-500/90 text-white hover:from-purple-600 hover:to-violet-600'
+                        : isRoomsPage
+                          ? 'bg-gradient-to-r from-violet-500/90 to-purple-500/90 text-white hover:from-violet-600 hover:to-purple-600'
+                          : 'bg-gradient-to-r from-violet-500/90 to-purple-500/90 text-white hover:from-violet-600 hover:to-purple-600'
+                      } shadow-lg hover:shadow-violet-500/25`}
+                  >
+                    Đăng ký
+                  </button>
+                </>
+              )}
+            </div>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className={`md:hidden ${isScrolled || isRoomsPage
+              ? darkMode
+                ? 'text-white'
+                : 'text-gray-900'
+              : isRoomsPage
+                ? 'text-gray-900'
+                : 'text-white'
+              }`}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {isMobileMenuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
+            </svg>
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className={`md:hidden mt-4 rounded-lg overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'
+                }`}
+            >
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`block px-4 py-2 ${darkMode
+                    ? 'text-gray-300 hover:text-white hover:bg-gray-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Login Modal */}

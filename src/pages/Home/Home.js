@@ -4,6 +4,11 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from '../../components/ThemeToggle/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
+import ImageWithFallback from '../../components/ImageWithFallback/ImageWithFallback';
+import { images, defaultImages } from '../../assets/images';
+
+// Thêm biến môi trường cho base URL của hình ảnh
+const IMAGE_BASE_URL = process.env.PUBLIC_URL;
 
 const Home = () => {
   const { darkMode } = useTheme();
@@ -11,14 +16,8 @@ const Home = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [direction, setDirection] = useState(1); // 1 for right, -1 for left
 
-  // Mảng chứa đường dẫn các hình nền
-  const backgroundImages = [
-    '/assets/images/backgrounds/hero-bg.jpg',
-    '/assets/images/backgrounds/hero-bg-2.jpg',
-    '/assets/images/backgrounds/hero-bg-3.jpg',
-    '/assets/images/backgrounds/hero-bg-4.jpg',
-    // Thêm nhiều hình nền khác tại đây
-  ];
+  // Cập nhật đường dẫn hình ảnh
+  const backgroundImages = images.backgrounds;
 
   const slideVariants = {
     enter: (direction) => ({
@@ -68,6 +67,57 @@ const Home = () => {
     });
   };
 
+  const featuredRooms = [
+    {
+      id: 1,
+      name: "Phòng Tổng Thống",
+      description: "Không gian đẳng cấp với tầm nhìn toàn cảnh",
+      price: "15.000.000đ",
+      image: images.rooms.presidential,
+      tags: ["Sang trọng", "Độc quyền", "Dịch vụ VIP"]
+    },
+    {
+      id: 2,
+      name: "Suite Hoàng Gia",
+      description: "Trải nghiệm đẳng cấp hoàng gia",
+      price: "8.500.000đ",
+      image: images.rooms.royalSuite,
+      tags: ["Quý phái", "Tinh tế", "Riêng tư"]
+    },
+    {
+      id: 3,
+      name: "Penthouse Panorama",
+      description: "Tầm nhìn 360 độ từ tầng thượng",
+      price: "12.000.000đ",
+      image: images.rooms.penthouse,
+      tags: ["Cao cấp", "View Panorama", "Độc đáo"]
+    }
+  ];
+
+  const services = [
+    {
+      icon: images.features.service,
+      title: "Dịch Vụ VIP",
+      description: "Phục vụ 24/7 với đội ngũ chuyên nghiệp"
+    },
+    {
+      icon: images.features.restaurant,
+      title: "Ẩm Thực Đỉnh Cao",
+      description: "Nhà hàng 5 sao với đầu bếp quốc tế"
+    },
+    {
+      icon: images.features.spa,
+      title: "Spa & Wellness",
+      description: "Thư giãn tuyệt đối với dịch vụ spa cao cấp"
+    }
+  ];
+
+  // Thêm xử lý lỗi hình ảnh
+  const handleImageError = (e) => {
+    const type = e.target.dataset.type || 'room';
+    e.target.src = defaultImages[type];
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -76,126 +126,143 @@ const Home = () => {
       className={darkMode ? 'dark' : ''}
     >
       <ThemeToggle />
-      {/* Hero Section */}
+
+      {/* Hero Section với Video Background */}
       <div className="relative min-h-screen overflow-hidden">
-        <AnimatePresence initial={false} custom={direction}>
-          <motion.div
-            key={currentImageIndex}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{
-              x: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 }
-            }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
-            onDragEnd={(e, { offset, velocity }) => {
-              const swipe = swipePower(offset.x, velocity.x);
-
-              if (swipe < -swipeConfidenceThreshold) {
-                paginate(1);
-              } else if (swipe > swipeConfidenceThreshold) {
-                paginate(-1);
-              }
-            }}
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: `url('${backgroundImages[currentImageIndex]}')`,
-              zIndex: 1
-            }}
+        <div className="absolute inset-0">
+          <img
+            src={backgroundImages[currentImageIndex]}
+            alt="Hotel Background"
+            className="absolute w-full h-full object-cover"
+            onError={handleImageError}
+            data-type="background"
           />
-        </AnimatePresence>
-
-        {/* Navigation Arrows */}
-        <button
-          className="navigation-arrow left-arrow"
-          onClick={() => paginate(-1)}
-        >
-          ‹
-        </button>
-        <button
-          className="navigation-arrow right-arrow"
-          onClick={() => paginate(1)}
-        >
-          ›
-        </button>
-
-        <div className="absolute inset-0 bg-black bg-opacity-50 z-[2]" />
-        <div className="relative container mx-auto px-6 py-32 z-[3]">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-5xl font-bold leading-tight animate-fade-in text-white">
-              Welcome to Luxury Hotel
-            </h1>
-            <p className="text-xl animate-fade-in-delay text-white mt-4 mb-8">
-              Experience the perfect blend of comfort and luxury
-            </p>
-            <div className="animate-fade-in-delay-2">
-              <SearchBar />
-              {isLoggedIn && (
-                <div className="mt-8">
-                  <Link
-                    to="/rooms"
-                    className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors inline-block"
-                  >
-                    Browse Rooms
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
+
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
+
+        <div className="relative container mx-auto px-6 py-32 z-[3]">
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="text-center max-w-4xl mx-auto"
+          >
+            <h1 className="text-6xl font-bold leading-tight animate-fade-in text-white mb-6">
+              Khách Sạn Sang Chảnh
+            </h1>
+            <p className="text-2xl animate-fade-in-delay text-white/90 mb-12">
+              Nơi Đẳng Cấp Gặp Gỡ Sự Tinh Tế
+            </p>
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl">
+              <SearchBar />
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+          className="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-white text-center"
+        >
+          <p className="text-sm mb-2">Khám phá thêm</p>
+          <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </motion.div>
       </div>
 
-      {/* Featured Rooms Section */}
-      <motion.section
-        className={`featured-rooms py-20 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'
-          }`}
-        initial={{ y: 50 }}
-        animate={{ y: 0 }}
-        transition={{ delay: 0.2, duration: 0.6 }}
-      >
+      {/* Thống kê ấn tượng */}
+      <section className={`py-16 ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
         <div className="container mx-auto px-6">
-          <h2 className={`text-3xl font-bold text-center mb-12 ${darkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-            Featured Rooms
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
-              '/assets/images/rooms/deluxe-1.jpg',
-              '/assets/images/rooms/suite-2.jpg',
-              '/assets/images/rooms/family-1.jpg'
-            ].map((imagePath, index) => (
+              { number: "10+", text: "Năm Kinh Nghiệm" },
+              { number: "150+", text: "Phòng Sang Trọng" },
+              { number: "50+", text: "Giải Thưởng" },
+              { number: "98%", text: "Khách Hài Lòng" }
+            ].map((stat, index) => (
               <motion.div
                 key={index}
-                className="room-preview group"
-                whileHover={{
-                  scale: 1.05,
-                  boxShadow: "0px 5px 15px rgba(0,0,0,0.1)"
-                }}
-                transition={{ type: "spring", stiffness: 300 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="text-center"
               >
-                <div className="bg-white rounded-2xl overflow-hidden shadow-lg">
-                  <div className="relative overflow-hidden">
+                <h3 className={`text-4xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  {stat.number}
+                </h3>
+                <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  {stat.text}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Phòng Nổi bật với Animation */}
+      <motion.section
+        className={`featured-rooms py-20 ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}
+      >
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className={`text-5xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'} tracking-tight`}>
+              Phòng Đẳng Cấp
+            </h2>
+            <p className={`text-2xl ${darkMode ? 'text-gray-400' : 'text-gray-600'} max-w-2xl mx-auto`}>
+              Trải nghiệm không gian sống đỉnh cao với thiết kế sang trọng và tiện nghi hiện đại
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {featuredRooms.map((room, index) => (
+              <motion.div
+                key={room.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.2 }}
+                className="group cursor-pointer"
+                whileHover={{ y: -10 }}
+              >
+                <div className={`rounded-3xl overflow-hidden shadow-2xl ${darkMode ? 'bg-gray-700' : 'bg-white'} 
+                  transform transition-all duration-500 hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)]`}>
+                  <div className="relative h-[300px]"> {/* Fixed height container */}
                     <img
-                      src={imagePath}
-                      alt={`Luxury Room ${index + 1}`}
-                      className="w-full h-64 object-cover transform group-hover:scale-110 transition-transform duration-500"
+                      src={room.image}
+                      alt={room.name}
+                      className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                      onError={handleImageError}
+                      data-type="room"
                     />
-                    <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2">Luxury Room {index + 1}</h3>
-                    <p className="text-gray-600 mb-4">Experience ultimate comfort and luxury</p>
-                    <Link
-                      to="/rooms"
-                      className="text-blue-600 font-semibold hover:text-blue-700"
-                    >
-                      View Details →
-                    </Link>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    <div className="absolute bottom-6 left-6 right-6">
+                      <div className="flex gap-3 mb-3 flex-wrap">
+                        {room.tags.map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="px-4 py-1.5 bg-white/30 backdrop-blur-md rounded-full text-white text-sm font-medium"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      <h3 className="text-3xl font-bold text-white mb-3">
+                        {room.name}
+                      </h3>
+                      <p className="text-white/90 text-xl font-medium">
+                        Từ {room.price}/đêm
+                      </p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -204,82 +271,52 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Features Section */}
-      <section className={`py-20 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+      {/* Dịch vụ & Tiện ích */}
+      <section className={`py-24 ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
         <div className="container mx-auto px-6">
-          <h2 className={`text-3xl font-bold text-center mb-12 ${darkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-            Why Choose Us
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <motion.div
-              className="group"
-              whileHover={{ y: -5 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <div className={`rounded-2xl shadow-xl p-8 transform transition-all duration-300 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:shadow-2xl'
-                }`}>
-                <img
-                  src="/assets/images/features/best-price.jpg"
-                  alt="Best Prices"
-                  className="w-full h-48 object-cover rounded-xl mb-6"
-                />
-                <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                  Best Price Guarantee
-                </h3>
-                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'
-                  }`}>
-                  Find a lower price? We'll match it!
-                </p>
-              </div>
-            </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className={`text-5xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'} tracking-tight`}>
+              Dịch Vụ Đẳng Cấp
+            </h2>
+            <p className={`text-2xl ${darkMode ? 'text-gray-400' : 'text-gray-600'} max-w-2xl mx-auto`}>
+              Trải nghiệm dịch vụ 5 sao chuẩn quốc tế với đội ngũ chuyên nghiệp
+            </p>
+          </motion.div>
 
-            <motion.div
-              className="group"
-              whileHover={{ y: -5 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <div className={`rounded-2xl shadow-xl p-8 transform transition-all duration-300 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:shadow-2xl'
-                }`}>
-                <img
-                  src="/assets/images/features/easy-booking.jpg"
-                  alt="Easy Booking"
-                  className="w-full h-48 object-cover rounded-xl mb-6"
-                />
-                <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                  Easy Booking
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {services.map((service, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.2 }}
+                whileHover={{ scale: 1.05 }}
+                className={`p-10 rounded-3xl ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}
+                  transition-all duration-500 transform hover:shadow-[0_10px_40px_rgba(8,_112,_184,_0.4)]`}
+              >
+                <div className="relative w-20 h-20 mb-6 mx-auto overflow-hidden rounded-2xl">
+                  <img
+                    src={service.icon}
+                    alt={service.title}
+                    className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
+                    onError={handleImageError}
+                    data-type="feature"
+                  />
+                </div>
+                <h3 className={`text-2xl font-bold mb-4 text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  {service.title}
                 </h3>
-                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'
-                  }`}>
-                  Book your stay in just a few clicks
+                <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-center text-lg`}>
+                  {service.description}
                 </p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="group"
-              whileHover={{ y: -5 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <div className={`rounded-2xl shadow-xl p-8 transform transition-all duration-300 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:shadow-2xl'
-                }`}>
-                <img
-                  src="/assets/images/features/support.jpg"
-                  alt="24/7 Support"
-                  className="w-full h-48 object-cover rounded-xl mb-6"
-                />
-                <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                  24/7 Support
-                </h3>
-                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'
-                  }`}>
-                  We're here to help anytime
-                </p>
-              </div>
-            </motion.div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
